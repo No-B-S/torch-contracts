@@ -8,11 +8,12 @@ import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 import "./MultiOwnable.sol";
 
 
-contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, MultiOwnable, ERC2981 {
+contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, MultiOwnable, ERC2981 {
     using Counters for Counters.Counter;
     struct ContractConfig {
       string name;
@@ -51,6 +52,13 @@ contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, MultiOwnable,
         _setTokenURI(newItemId, _tokenURI);
 
         return newItemId;
+    }
+
+    // Override burning function to allow contract admin burn tokens
+    function burn(uint256 tokenId) public virtual override {
+        //solhint-disable-next-line max-line-length
+        require(_isApprovedOrOwner(_msgSender(), tokenId) || hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "ERC721Burnable: caller is not owner nor approved");
+        _burn(tokenId);
     }
 
     // The following functions are overrides required by Solidity.
