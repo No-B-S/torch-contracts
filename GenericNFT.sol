@@ -14,10 +14,17 @@ import "./MultiOwnable.sol";
 
 
 contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, MultiOwnable, ERC2981 {
+    uint256 public constant MAX_TOKENS_BATCH_SIZE = 256;
+
     using Counters for Counters.Counter;
     struct ContractConfig {
       string name;
       string symbol;
+      address owner;
+    }
+
+    struct TokenConfig {
+      string tokenURI;
       address owner;
     }
 
@@ -40,11 +47,7 @@ contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnabl
         return _config.symbol;
     }
 
-    function mint(address recipient, string memory _tokenURI)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        returns (uint256)
-    {
+    function _mintSingle(address recipient, string memory _tokenURI) internal returns (uint256) {
         _tokenIds.increment();
 
         uint256 newItemId = _tokenIds.current();
@@ -52,6 +55,24 @@ contract GenericNFT is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnabl
         _setTokenURI(newItemId, _tokenURI);
 
         return newItemId;
+    }
+
+    function mint(address recipient, string memory _tokenURI)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+        returns (uint256)
+    {
+        return _mintSingle(recipient, _tokenURI);
+    }
+
+    function mintBatch(TokenConfig[] memory tokensBatch)
+        public
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {
+        require(tokensBatch.length <= MAX_TOKENS_BATCH_SIZE, "Batch size limit reached!");
+        for (uint i = 0; i < tokensBatch.length; i++) {
+            _mintSingle(tokensBatch[i].owner, tokensBatch[i].tokenURI);
+        }
     }
 
     // Override burning function to allow contract admin burn tokens
