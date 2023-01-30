@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 
-contract BaseERC721 is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnable, Ownable {
+contract BaseERC721 is ERC721, ERC721URIStorage, ERC721Enumerable, ERC721Burnable {
     constructor() ERC721("", "") {}
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
